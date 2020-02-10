@@ -22,19 +22,35 @@
         <td>
           <img
             class="w-6 h-6"
-            :src="`https://static.coincap.io/assets/icons/${asset.symbol.toLowerCase()}@2x.png`"
+            :src="
+              `https://static.coincap.io/assets/icons/${asset.symbol.toLowerCase()}@2x.png`
+            "
             :alt="asset.name"
           />
         </td>
         <td>
-          <b># {{asset.rank}}</b>
+          <b># {{ asset.rank }}</b>
         </td>
-        <td>{{ asset.name }}</td>
-        <td>{{ asset.priceUsd | dollar}}</td>
-        <td>{{asset.marketCapUsd | dollar }}</td>
+        <td>
+          <!-- <router-link :to="'/coin/' + asset.id">{{ asset.name }}</router-link> -->
+          <router-link
+            class="hover:underline text-green-600"
+            :to="{ name: 'coin-detail', params: { id: asset.id } }"
+            >{{ asset.name }}</router-link
+          >
+          <small class="text-gray-600 ml-1">
+            {{ asset.symbol }}
+          </small>
+        </td>
+        <td>{{ asset.priceUsd | dollar }}</td>
+        <td>{{ asset.marketCapUsd | dollar }}</td>
         <td
-          :class=" (asset.changePercent24Hr < 0) ? 'text-red-600' : 'text-green-600' "
-        >{{ asset.changePercent24Hr | percent}}</td>
+          :class="
+            asset.changePercent24Hr < 0 ? 'text-red-600' : 'text-green-600'
+          "
+        >
+          {{ asset.changePercent24Hr | percent }}
+        </td>
         <td class="hidden sm:block"></td>
       </tr>
     </tbody>
