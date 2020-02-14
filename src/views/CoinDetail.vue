@@ -81,12 +81,44 @@
           history.map(item => [item.date, parseFloat(item.priceUsd).toFixed(2)])
         "
       ></line-chart>
+
+      <h3 class="text-xl my-10">Mejores ofertas de cambio</h3>
+      <table>
+        <tr
+          v-for="market in markets"
+          :key="`${market.exchangeId}-${market.priceUsd}`"
+          class="border-b"
+        >
+          <td>
+            <b>{{ market.exchangeId }}</b>
+          </td>
+          <td>{{ market.priceUsd | dollar }}</td>
+          <td>{{ market.baseSymbol }} / {{ market.quoteSymbol }}</td>
+          <td>
+            <px-button
+              :is-loading="market.isLoading || false"
+              v-if="!market.url"
+              @on-touch="getWebSite(market)"
+            >
+              <slot>Get Url</slot>
+            </px-button>
+            <a
+              v-else
+              :href="market.url"
+              class="hover:underline text-green-600"
+              target="_blank"
+              >{{ market.url }}</a
+            >
+          </td>
+        </tr>
+      </table>
     </template>
   </div>
 </template>
 
 <script>
 import api from "@/api";
+import PxButton from "@/components/PxButton";
 export default {
   name: "CoinDetail",
 
@@ -94,21 +126,37 @@ export default {
     return {
       asset: {},
       history: {},
-      isLoading: false
+      isLoading: false,
+      markets: []
     };
   },
-
   created() {
     (this.isLoading = true), this.getCoin();
   },
 
   methods: {
+    getWebSite(exchange) {
+      this.$set(exchange, "isLoading", true);
+      return api
+        .getExchange(exchange.exchangeId)
+        .then(res => {
+          this.$set(exchange, "url", res.exchangeUrl);
+        })
+        .finally(() => {
+          this.$set(exchange, "isLoading", false);
+        });
+    },
     getCoin() {
       let id = this.$route.params.id;
-      Promise.all([api.getAsset(id), api.getAssetHistory(id)])
-        .then(([asset, history]) => {
+      Promise.all([
+        api.getAsset(id),
+        api.getAssetHistory(id),
+        api.getMarkets(id)
+      ])
+        .then(([asset, history, markets]) => {
           this.asset = asset;
           this.history = history;
+          this.markets = markets;
         })
         .finally(() => (this.isLoading = false));
     }
@@ -130,6 +178,9 @@ export default {
         this.history.length
       );
     }
+  },
+  components: {
+    PxButton
   }
 };
 </script>
