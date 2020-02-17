@@ -1,11 +1,7 @@
 <template>
   <div class="flex-col">
     <div class="flex justify-center">
-      <bounce-loader
-        :loading="isLoading"
-        :color="'#68d391'"
-        :size="100"
-      ></bounce-loader>
+      <bounce-loader :loading="isLoading" :color="'#68d391'" :size="100"></bounce-loader>
     </div>
     <template v-if="!isLoading">
       <div class="flex flex-col sm:flex-row justify-around items-center">
@@ -19,7 +15,7 @@
           />
           <h1 class="text-5xl">
             {{ asset.name }}
-            <small class="sm:mr-2 text-gray-500">{{ asset.symbol }} </small>
+            <small class="sm:mr-2 text-gray-500">{{ asset.symbol }}</small>
           </h1>
         </div>
 
@@ -54,14 +50,14 @@
 
         <div class="my-10 sm:mt-0 flex flex-col justify-center text-center">
           <button
+            @click="toogleConverter"
             class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Cambiar
-          </button>
+          >{{ fromUsd ? `USD a ${asset.symbol}` : `${asset.symbol} a USD` }}</button>
 
           <div class="flex flex-row my-5">
             <label class="w-full" for="convertValue">
               <input
+                v-model="convertValue"
                 id="convertValue"
                 type="number"
                 class="text-center bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal"
@@ -69,7 +65,7 @@
             </label>
           </div>
 
-          <span class="text-xl"></span>
+          <span class="text-xl">{{ convertResult }} {{ fromUsd ? `${asset.symbol}` : `USD`}}</span>
         </div>
       </div>
       <line-chart
@@ -107,8 +103,7 @@
               :href="market.url"
               class="hover:underline text-green-600"
               target="_blank"
-              >{{ market.url }}</a
-            >
+            >{{ market.url }}</a>
           </td>
         </tr>
       </table>
@@ -127,7 +122,9 @@ export default {
       asset: {},
       history: {},
       isLoading: false,
-      markets: []
+      markets: [],
+      convertValue: 1,
+      fromUsd: true
     };
   },
   created() {
@@ -159,10 +156,30 @@ export default {
           this.markets = markets;
         })
         .finally(() => (this.isLoading = false));
+    },
+    toogleConverter() {
+      this.fromUsd = !this.fromUsd;
+    }
+  },
+
+  watch: {
+    $route() {
+      this.getCoin();
     }
   },
 
   computed: {
+    convertResult() {
+      if (!this.convertValue) {
+        return 0;
+      }
+
+      let result = this.fromUsd
+        ? this.convertValue / this.asset.priceUsd
+        : this.convertValue * this.asset.priceUsd;
+
+      return result.toFixed(4);
+    },
     items() {
       return this.history.map(h => parseFloat(h.priceUsd).toFixed(2));
     },

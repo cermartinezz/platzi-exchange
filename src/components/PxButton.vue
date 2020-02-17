@@ -3,12 +3,10 @@
     @click="coinDetails"
     class="bg-tramsparent hover:bg-green-500 text-green-700 font-semibold"
   >
-    <beat-loader
-      :loading="isLoading"
-      :color="'#68d391'"
-      :size="8"
-    ></beat-loader>
-    <slot v-show="isLoading"></slot>
+    <beat-loader :loading="isLoading" :color="'#68d391'" :size="8"></beat-loader>
+    <p v-show="!isLoading">
+      <slot></slot>
+    </p>
   </button>
 </template>
 
